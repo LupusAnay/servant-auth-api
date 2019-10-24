@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="servant-auth-api-test" type="HaskellStackConfigurationType" factoryName="Haskell Stack Tester" show_console_on_std_err="false" show_console_on_std_out="false">
+    <module name="servant-auth-api" />
+    <option name="allowRunningInParallel" value="false" />
+    <option name="stackArgs" value="" />
+    <option name="testArguments" value="--color" />
+    <option name="testSuiteTargetName" value="servant-auth-api:test:servant-auth-api-test" />
+    <option name="workingDirPath" value="$PROJECT_DIR$" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
