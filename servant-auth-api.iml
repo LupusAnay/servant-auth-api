@@ -142,5 +142,26 @@
     <orderEntry type="library" name="profunctors-5.3" level="project" />
     <orderEntry type="library" name="contravariant-1.5.2" level="project" />
     <orderEntry type="library" name="StateVar-1.2" level="project" />
+    <orderEntry type="library" name="servant-auth-0.3.2.0" level="project" />
+    <orderEntry type="library" name="servant-auth-server-0.4.4.0" level="project" />
+    <orderEntry type="library" name="entropy-0.4.1.5" level="project" />
+    <orderEntry type="library" name="jose-0.8.1.0" level="project" />
+    <orderEntry type="library" name="lens-4.17.1" level="project" />
+    <orderEntry type="library" name="monad-time-0.3.1.0" level="project" />
+    <orderEntry type="library" name="concise-0.1.0.1" level="project" />
+    <orderEntry type="library" name="quickcheck-instances-0.3.22" level="project" />
+    <orderEntry type="library" name="x509-1.7.5" level="project" />
+    <orderEntry type="library" name="free-5.1.2" level="project" />
+    <orderEntry type="library" name="kan-extensions-5.2" level="project" />
+    <orderEntry type="library" name="parallel-3.2.2.0" level="project" />
+    <orderEntry type="library" name="reflection-2.1.5" level="project" />
+    <orderEntry type="library" name="semigroupoids-5.3.3" level="project" />
+    <orderEntry type="library" name="asn1-encoding-0.9.6" level="project" />
+    <orderEntry type="library" name="asn1-parse-0.9.5" level="project" />
+    <orderEntry type="library" name="asn1-types-0.3.3" level="project" />
+    <orderEntry type="library" name="hourglass-0.2.12" level="project" />
+    <orderEntry type="library" name="pem-0.2.4" level="project" />
+    <orderEntry type="library" name="adjunctions-4.4" level="project" />
+    <orderEntry type="library" name="invariant-0.5.3" level="project" />
   </component>
 </module>
