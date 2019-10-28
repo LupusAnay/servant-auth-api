@@ -4,51 +4,59 @@ module Lib
   ) where
 
 import Data.Generics.Internal.VL.Lens
+import qualified Data.Map as M
 import Network.Wai
 import Network.Wai.Handler.Warp
 import Servant
+import Servant.Auth.Server
+import Servant.Auth
 import User
+import UserHandlers
+import SessionHandlers
 
-type Auth = String
+type UsersAPI
+   = "users" :> ReqBody '[ JSON] NewUser :> Post '[ JSON] User
+   :<|> "users" :> Capture "id" UserId :> Get '[ JSON] User
+   :<|> "users" :> Get '[ JSON] [User]
+   :<|> "users" :> Auth '[ JWT, Cookie] Session :> Capture "id" UserId :> ReqBody '[ JSON] NewUser :> Patch '[ JSON] User
+   :<|> "users" :> Auth '[ JWT, Cookie] Session :> Capture "id" UserId :> DeleteNoContent '[ JSON] NoContent
 
-type CrudAPI c r u d = 
-       ReqBody '[ JSON] c :> Post '[ JSON] Int
-  :<|> Capture "id" Int :> Get '[ JSON] r
-  :<|> Get '[ JSON] [r]
-  :<|> ReqBody '[ JSON] u :> Capture "id" Int :> Patch '[ JSON] Int
-  :<|> Capture "id" Int :> Delete '[ JSON] d
+type SessionAPI
+   = "sessions" :> ReqBody '[ JSON] AuthData :> Post '[ JSON] (Headers '[ Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] Session)
+   :<|> "sessions" :> Auth '[ JWT, Cookie] Session :> Get '[ JSON] Session
+   :<|> "sessions" :> Auth '[ JWT, Cookie] Session :> DeleteNoContent '[ JSON] NoContent
 
-type UsersAPI = "users" :> CrudAPI NewUser User NewUser ()
+type API = UsersAPI :<|> SessionAPI
 
-server :: Server UsersAPI
-server = createUser
-    :<|> getUser
-    :<|> getUsers
-    :<|> patchUser
-    :<|> deleteUser
+sessionsServer :: JWTSettings -> CookieSettings -> Server SessionAPI
+sessionsServer jwts cs = createSession cs jwts :<|> getSession :<|> deleteSession
 
-createUser :: NewUser -> Handler UserId
-createUser user = pure (-1)
+type Storage = M.Map UserId User
+type DB = Pool Storage
+type Pool a = a
 
-getUsers :: Handler [User]
-getUsers = do
-  user <- getUser 1
-  pure [user]
+checkAuth :: DB -> BasicAuthData -> IO (AuthResult Session)
+checkAuth db (BasicAuthData "lupusanay" "qwerty") = pure $ Authenticated $ Session "0" "0" 1
 
-getUser :: UserId -> Handler User
-getUser id = pure $ User 1 "lupusanay" "lupusanay@gmail.com" "qwerty"
+usersServer :: Server UsersAPI
+usersServer = createUser :<|> getUser :<|> getUsers :<|> patchUser :<|> deleteUser
 
-patchUser :: NewUser -> UserId -> Handler UserId
-patchUser user id = pure 1
-
-deleteUser :: UserId -> Handler ()
-deleteUser id = pure ()
-
-api :: Proxy UsersAPI
+api :: Proxy API
 api = Proxy
 
-app :: Application
-app = serve api server
+app :: DB -> IO Application
+app db = do
+  key <- generateKey
+  let jwtCfg = defaultJWTSettings key
+      authCfg = checkAuth db
+      cfg = jwtCfg :. defaultCookieSettings :. authCfg :. EmptyContext
+  pure $ serveWithContext api cfg $ usersServer :<|> sessionsServer jwtCfg defaultCookieSettings 
+
+initDB :: IO DB
+initDB = pure $ M.fromList [(1, User 1 "lupusanay" "lupusanay@gmail.com" "qwerty")]
 
 startApp :: IO ()
-startApp = run 8080 app
+startApp = do 
+  db <- initDB
+  server <- app db
+  run 8080 server
