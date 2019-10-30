@@ -17,7 +17,7 @@ import SessionHandlers
 type UsersAPI
    = "users" :> ReqBody '[ JSON] NewUser :> Post '[ JSON] User
    :<|> "users" :> Capture "id" UserId :> Get '[ JSON] User
-   :<|> "users" :> Get '[ JSON] [User]
+   :<|> "users" :> Auth '[ JWT, Cookie] Session :> Get '[ JSON] [User]
    :<|> "users" :> Auth '[ JWT, Cookie] Session :> Capture "id" UserId :> ReqBody '[ JSON] NewUser :> Patch '[ JSON] User
    :<|> "users" :> Auth '[ JWT, Cookie] Session :> Capture "id" UserId :> DeleteNoContent '[ JSON] NoContent
 
@@ -48,9 +48,14 @@ app :: DB -> IO Application
 app db = do
   key <- generateKey
   let jwtCfg = defaultJWTSettings key
+      cookieCfg = defaultCookieSettings
+                            { cookiePath = Just "/"
+                            , cookieIsSecure = Servant.Auth.Server.NotSecure
+                            , cookieSameSite = AnySite
+                            }
       authCfg = checkAuth db
-      cfg = jwtCfg :. defaultCookieSettings :. authCfg :. EmptyContext
-  pure $ serveWithContext api cfg $ usersServer :<|> sessionsServer jwtCfg defaultCookieSettings 
+      cfg = cookieCfg :. jwtCfg :. authCfg :. EmptyContext
+  pure $ serveWithContext api cfg $ usersServer :<|> sessionsServer jwtCfg cookieCfg
 
 initDB :: IO DB
 initDB = pure $ M.fromList [(1, User 1 "lupusanay" "lupusanay@gmail.com" "qwerty")]

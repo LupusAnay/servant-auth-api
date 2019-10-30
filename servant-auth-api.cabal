@@ -26,6 +26,7 @@ library
                      , warp
                      , generic-lens
                      , containers
+                     , bytestring
   default-language:    Haskell2010
   default-extensions:  DataKinds
                      , TemplateHaskell
