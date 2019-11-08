@@ -1,6 +1,7 @@
 module SessionHandlers where
 
 import Control.Monad.IO.Class (liftIO)
+import Database
 import Servant
 import Servant.Auth.Server
 import User
@@ -9,10 +10,11 @@ blankSession :: Session
 blankSession = Session "0" "0" 1
 
 createSession ::
-     CookieSettings
+     (MonadDB m)
+  => CookieSettings
   -> JWTSettings
   -> AuthData
-  -> Handler (Headers '[ Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] Session)
+  -> m (Headers '[ Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] Session)
 createSession cs jwts (AuthData "lupusanay" "qwerty") = do
   mApplyCookies <- liftIO $ acceptLogin cs jwts blankSession
   case mApplyCookies of

@@ -1,9 +1,11 @@
 <component name="ProjectDictionaryState">
   <dictionary name="lupusanay">
     <words>
+      <w>connstr</w>
       <w>data.</w>
       <w>jwts</w>
       <w>network.</w>
+      <w>postgre</w>
     </words>
   </dictionary>
 </component>

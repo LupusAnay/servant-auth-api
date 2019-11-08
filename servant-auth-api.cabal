@@ -27,11 +27,15 @@ library
                      , generic-lens
                      , containers
                      , bytestring
+                     , postgresql-simple
+                     , resource-pool
+                     , mtl
   default-language:    Haskell2010
   default-extensions:  DataKinds
                      , TemplateHaskell
                      , TypeOperators
                      , QuasiQuotes
+                     , DeriveFunctor
                      , OverloadedStrings
                      , DeriveGeneric
                      , DeriveAnyClass
