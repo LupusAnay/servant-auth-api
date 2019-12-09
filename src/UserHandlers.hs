@@ -22,6 +22,7 @@ getUsers (Authenticated session) = do
   case result of 
     Right users -> pure users
     Left error -> throwError err500 {errBody = "Something went wrong with database query"}
+getUsers _ = throwError err403
 
 getUser :: (MonadDB m) => UserId -> m User
 getUser id = pure $ User 1 "lupusanay" "lupusanay@gmail.com" "qwerty"
