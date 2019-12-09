@@ -68,4 +68,4 @@ startApp = do
   key <- generateKey
   run 8080 $ app pool key
   where
-    settings = (1, 1, "host=localhost port=5432 user=lupusanay dbname=postgres password=qwerty")
+    settings = (1, 1, "host=localhost port=5432 user=lupusanay dbname=auth password=qwerty")
