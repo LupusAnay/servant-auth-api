@@ -1,16 +1,17 @@
 module SessionHandlers where
 
+import App
 import Control.Monad.IO.Class (liftIO)
-import Database
 import Servant
 import Servant.Auth.Server
 import User
+import Control.Monad.Except (MonadError)
 
 blankSession :: Session
 blankSession = Session "0" "0" 1
 
 createSession ::
-     (MonadDB m)
+     (MonadDB m, MonadError ServerError m)
   => CookieSettings
   -> JWTSettings
   -> AuthData
@@ -22,8 +23,8 @@ createSession cs jwts (AuthData "lupusanay" "qwerty") = do
     Just cookies -> pure $ cookies blankSession
 createSession _ _ _ = throwError err401
 
-getSession :: AuthResult Session -> Handler Session
+getSession :: (MonadDB m, MonadError ServerError m) => AuthResult Session -> m Session
 getSession auth = throwError err501
 
-deleteSession :: AuthResult Session -> Handler NoContent
+deleteSession :: (MonadDB m, MonadError ServerError m) => AuthResult Session -> m NoContent
 deleteSession auth = throwError err501

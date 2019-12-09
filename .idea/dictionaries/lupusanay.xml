@@ -2,10 +2,17 @@
   <dictionary name="lupusanay">
     <words>
       <w>connstr</w>
+      <w>crypto.jose</w>
+      <w>crypto.jose.jwa.jwk</w>
       <w>data.</w>
+      <w>dimap</w>
+      <w>hasql</w>
+      <w>hasql.th</w>
       <w>jwts</w>
+      <w>lmap</w>
       <w>network.</w>
       <w>postgre</w>
+      <w>rmap</w>
     </words>
   </dictionary>
 </component>

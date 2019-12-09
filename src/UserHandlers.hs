@@ -1,29 +1,35 @@
 module UserHandlers where
 
-import qualified Data.ByteString.Char8      as BS
-import qualified Data.ByteString.Lazy       as LBS
-import           Database
-import           Database.PostgreSQL.Simple (Connection)
-import           Servant
-import           Servant.Auth.Server
-import           User
+import App
+import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Lazy as LBS
+import Servant
+import Servant.Auth.Server
+import User
+import Control.Monad.Except (MonadError)
+import qualified Sessions
 
-createUser :: (MonadDB m) => NewUser -> m User
-createUser conn user = getUser conn 1
+createUser :: (MonadDB m, MonadError ServerError m) => NewUser -> m UserId
+createUser user = do 
+  result <- runSession (Sessions.createUser user)
+  case result of
+    Right userId -> pure userId
+    Left error -> throwError err500 {errBody = "Something went wrong with database query"}
 
-getUsers :: (MonadDB m) => AuthResult Session -> m [User]
+getUsers :: (MonadDB m, MonadError ServerError m) => AuthResult Session -> m [User]
 getUsers (Authenticated session) = do
-  user <- getUser conn 1
-  pure [user]
-getUsers err = throwError $ err403 {errBody = LBS.fromStrict . BS.pack . show $ err}
+  result <- runSession Sessions.getAllUsers
+  case result of 
+    Right users -> pure users
+    Left error -> throwError err500 {errBody = "Something went wrong with database query"}
 
 getUser :: (MonadDB m) => UserId -> m User
 getUser id = pure $ User 1 "lupusanay" "lupusanay@gmail.com" "qwerty"
 
-patchUser :: (MonadDB m) => AuthResult Session -> UserId -> NewUser -> m User
+patchUser :: (MonadDB m, MonadError ServerError m) => AuthResult Session -> UserId -> NewUser -> m User
 patchUser (Authenticated session) user id = throwError err501
-patchUser _ _ _                              = throwError err403
+patchUser _ _ _ = throwError err403
 
-deleteUser :: (MonadDB m) => AuthResult Session -> UserId -> m NoContent
+deleteUser :: (MonadDB m, MonadError ServerError m) => AuthResult Session -> UserId -> m NoContent
 deleteUser (Authenticated session) id = throwError err501
-deleteUser _ _                           = throwError err403
+deleteUser _ _ = throwError err403

@@ -16,7 +16,7 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Lib
-  other-modules:       User, UserHandlers, SessionHandlers
+  other-modules:       User, UserHandlers, SessionHandlers, App, Sessions, Statements
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , servant-server
@@ -26,10 +26,15 @@ library
                      , warp
                      , generic-lens
                      , containers
+                     , vector
                      , bytestring
-                     , postgresql-simple
-                     , resource-pool
+                     , hasql
+                     , hasql-pool
+                     , hasql-th
                      , mtl
+                     , profunctors
+                     , text
+                     , jose
   default-language:    Haskell2010
   default-extensions:  DataKinds
                      , TemplateHaskell
@@ -38,6 +43,7 @@ library
                      , DeriveFunctor
                      , OverloadedStrings
                      , DeriveGeneric
+                     , GeneralizedNewtypeDeriving
                      , DeriveAnyClass
                      , AllowAmbiguousTypes
                      , DuplicateRecordFields
