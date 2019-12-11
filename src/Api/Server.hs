@@ -1,7 +1,7 @@
 module Api.Server where
 
+import Api.App
 import Api.Description
-import Api.ServantApp
 import Control.Monad.Except
 import Control.Monad.Reader
 import Crypto.JOSE

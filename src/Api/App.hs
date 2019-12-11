@@ -1,6 +1,6 @@
 {-# LANGUAGE NoDeriveAnyClass #-}
 
-module Api.ServantApp where
+module Api.App where
 
 import           Control.Monad.Except   (MonadError)
 import           Control.Monad.IO.Class (MonadIO, liftIO)

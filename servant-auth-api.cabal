@@ -17,7 +17,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Lib
   other-modules:       Api.Description
-                     , Api.ServantApp
+                     , Api.App
                      , Api.Server
                      , Data.AuthSession
                      , Data.User

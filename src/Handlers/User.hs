@@ -1,6 +1,6 @@
 module Handlers.User where
 
-import Api.ServantApp
+import Api.App
 import Control.Monad.Except (MonadError)
 import Data.AuthSession (AuthSession)
 import qualified Data.ByteString.Char8 as BS

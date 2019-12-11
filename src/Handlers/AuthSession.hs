@@ -1,6 +1,6 @@
 module Handlers.AuthSession where
 
-import Api.ServantApp
+import Api.App
 import Control.Monad.Except (MonadError)
 import Control.Monad.IO.Class (liftIO)
 import Data.AuthSession
