@@ -1,14 +1,14 @@
 {-# LANGUAGE NoDeriveAnyClass #-}
 
-module App where
+module Api.ServantApp where
 
-import           Control.Monad.Except (ExceptT, MonadError)
-import           Control.Monad.Reader
-import           GHC.Generics
-import           Hasql.Pool
-import           Hasql.Session
-import           Servant              (ServerError)
-import           Servant.Server       (Handler)
+import           Control.Monad.Except   (MonadError)
+import           Control.Monad.IO.Class (MonadIO, liftIO)
+import           Control.Monad.Reader   (ReaderT, ask)
+import           GHC.Generics           (Generic)
+import           Hasql.Pool             (Pool, UsageError, use)
+import           Hasql.Session          (Session)
+import           Servant                (Handler, ServerError)
 
 class MonadIO m =>
       MonadDB m

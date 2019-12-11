@@ -16,7 +16,17 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Lib
-  other-modules:       User, UserHandlers, SessionHandlers, App, Sessions, Statements
+  other-modules:       Api.Description
+                     , Api.ServantApp
+                     , Api.Server
+                     , Data.AuthSession
+                     , Data.User
+                     , Database.Sessions.AuthSessions
+                     , Database.Sessions.Users
+                     , Database.Statements.AuthSessions
+                     , Database.Statements.Users
+                     , Handlers.AuthSession
+                     , Handlers.User
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , servant-server

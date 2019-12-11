@@ -1,12 +1,10 @@
-module User where
+module Data.User where
 
-import           Data.Aeson            (FromJSON, ToJSON)
-import           Data.Generics.Product
+import           Data.Aeson          (FromJSON, ToJSON)
 import           GHC.Generics
 import           Servant.Auth.Server
 
 type UserId = Int
-
 
 -- TODO: Skip password serialization in ToJSON
 data User =
@@ -32,11 +30,3 @@ data NewUser =
     , password :: String
     }
   deriving (Show, Generic, FromJSON, ToJSON)
-
-data Session =
-  Session
-    { created :: String
-    , expires :: String
-    , userId  :: UserId
-    }
-  deriving (Show, Generic, FromJSON, ToJSON, ToJWT, FromJWT)
