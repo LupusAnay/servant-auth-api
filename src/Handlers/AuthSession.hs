@@ -18,10 +18,8 @@ createSession ::
   -> AuthData
   -> m (Headers '[ Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] AuthSession)
 createSession cs jwts (AuthData "lupusanay" "qwerty") = do
-  mApplyCookies <- liftIO $ acceptLogin cs jwts blankSession
-  case mApplyCookies of
-    Nothing -> throwError err401
-    Just cookies -> pure $ cookies blankSession
+  cookies <- liftMaybe' =<< liftIO (acceptLogin cs jwts blankSession)
+  pure $ cookies blankSession
 createSession _ _ _ = throwError err401
 
 getSession :: (MonadDB m, MonadError ServerError m) => AuthResult AuthSession -> m AuthSession
