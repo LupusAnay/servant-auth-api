@@ -10,3 +10,9 @@ createUser user = Session.statement user Statements.createUser
 
 getAllUsers :: Session [User]
 getAllUsers = Session.statement () Statements.getAllUsers
+
+deleteUser :: UserId -> Session ()
+deleteUser id = Session.statement id Statements.deleteUser
+
+updateUser :: UserId -> NewUser -> Session ()
+updateUser id user = Session.statement (id, user) Statements.updateUser
