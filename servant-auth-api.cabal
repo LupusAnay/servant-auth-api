@@ -21,9 +21,7 @@ library
                      , Api.Server
                      , Data.AuthSession
                      , Data.User
-                     , Database.Sessions.AuthSessions
                      , Database.Sessions.Users
-                     , Database.Statements.AuthSessions
                      , Database.Statements.Users
                      , Handlers.AuthSession
                      , Handlers.User
@@ -45,6 +43,8 @@ library
                      , profunctors
                      , text
                      , jose
+                     , lens
+                     , bcrypt
   default-language:    Haskell2010
   default-extensions:  DataKinds
                      , TemplateHaskell
@@ -60,6 +60,7 @@ library
                      , FlexibleContexts
                      , NoMonomorphismRestriction
                      , TypeApplications
+                     , RankNTypes
 
 executable servant-auth-api-exe
   hs-source-dirs:      app

@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/app" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea" />
       <excludeFolder url="file://$MODULE_DIR$/.stack-work" />
     </content>
     <orderEntry type="inheritedJdk" />
@@ -207,5 +208,10 @@
     <orderEntry type="library" name="th-lift-instances-0.1.14" level="project" />
     <orderEntry type="library" name="th-reify-many-0.1.9" level="project" />
     <orderEntry type="library" name="th-expand-syns-0.4.5.0" level="project" />
+    <orderEntry type="library" name="bcrypt-0.0.11" level="project" />
+    <orderEntry type="library" name="data-default-0.7.1.1" level="project" />
+    <orderEntry type="library" name="data-default-instances-containers-0.0.1" level="project" />
+    <orderEntry type="library" name="data-default-instances-dlist-0.0.1" level="project" />
+    <orderEntry type="library" name="data-default-instances-old-locale-0.0.1" level="project" />
   </component>
 </module>
