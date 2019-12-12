@@ -1,18 +1,31 @@
 module Handlers.User where
 
 import Api.App
-import Control.Monad.Except (MonadError)
+import Control.Lens
+import Control.Lens.Operators
+import Control.Monad.Except (MonadError, liftEither)
 import Data.AuthSession (AuthSession)
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy as LBS
+import Data.Generics.Product
 import Data.User
 import qualified Database.Sessions.Users as Sessions
 import Servant
 import Servant.Auth.Server
+import Crypto.BCrypt (hashPasswordUsingPolicy, slowerBcryptHashingPolicy)
+import Control.Monad.IO.Class (liftIO, MonadIO)
+
+hashPassword :: (MonadIO m, MonadError ServerError m) => String -> m String
+hashPassword pass = do
+  hashMaybe <- liftIO $ hashPasswordUsingPolicy slowerBcryptHashingPolicy (BS.pack pass)
+  case hashMaybe of 
+    Just hash -> pure $ BS.unpack hash
+    Nothing -> throwError err500
 
 createUser :: (MonadDB m, MonadError ServerError m) => NewUser -> m UserId
 createUser user = do
-  result <- runSession (Sessions.createUser user)
+  hashedUser <- user & field @"password" hashPassword
+  result <- runSession (Sessions.createUser hashedUser)
   case result of
     Right userId -> pure userId
     Left error -> throwError err500 {errBody = "Something went wrong with database query"}
