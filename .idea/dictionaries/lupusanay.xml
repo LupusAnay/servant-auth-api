@@ -2,6 +2,7 @@
   <dictionary name="lupusanay">
     <words>
       <w>api.</w>
+      <w>bcrypt</w>
       <w>connstr</w>
       <w>crypto.jose</w>
       <w>crypto.jose.jwa.jwk</w>
