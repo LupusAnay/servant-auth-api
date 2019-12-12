@@ -37,7 +37,8 @@ getUser id = pure $ User 1 "lupusanay" "lupusanay@gmail.com" "qwerty"
 
 patchUser :: (MonadDB m, MonadError ServerError m) => AuthResult AuthSession -> UserId -> NewUser -> m NoContent
 patchUser (Authenticated session) id user = do
- user <- liftEither' =<< runSession (Sessions.updateUser id user)
+ hashedUser <- user & field @"password" hashPassword
+ liftEither' =<< runSession (Sessions.updateUser id hashedUser)
  pure NoContent
 patchUser _ _ _ = throwError err403
 
