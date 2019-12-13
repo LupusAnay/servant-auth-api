@@ -8,8 +8,11 @@ import qualified Hasql.Session             as Session
 createUser :: NewUser -> Session UserId
 createUser user = Session.statement user Statements.createUser
 
-getUser :: UserId -> Session User
-getUser id = Session.statement id Statements.getUser
+getUserById :: UserId -> Session (Maybe User)
+getUserById id = Session.statement id Statements.getUserById
+
+getUserByUsername :: String -> Session (Maybe User)
+getUserByUsername name = Session.statement name Statements.getUserByUsername
 
 getAllUsers :: Session [User]
 getAllUsers = Session.statement () Statements.getAllUsers

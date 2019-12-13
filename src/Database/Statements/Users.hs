@@ -15,12 +15,19 @@ createUser =
     userIdDecoder
     [TH.singletonStatement| insert into "users" (username, email, password) values ($1 :: text, $2 :: text, $3 :: text) returning "user_id" :: int4 |]
 
-getUser :: Statement UserId User
-getUser =
+getUserById :: Statement UserId (Maybe User)
+getUserById =
   dimap
     userIdEncoder
-    userDecoder
-    [TH.singletonStatement| select "user_id" :: int4, "username" :: text, email :: text, password :: text from "users" where "user_id" = $1 :: int4 |]
+    (userDecoder <$>)
+    [TH.maybeStatement| select "user_id" :: int4, "username" :: text, email :: text, password :: text from "users" where "user_id" = $1 :: int4 |]
+
+getUserByUsername :: Statement String (Maybe User)
+getUserByUsername =
+  dimap
+    (\name -> T.pack name)
+    (userDecoder <$>)
+    [TH.maybeStatement| select "user_id" :: int4, "username" :: text, email :: text, password :: text from "users" where "username" = $1 :: text |]
 
 getAllUsers :: Statement () [User]
 getAllUsers =
