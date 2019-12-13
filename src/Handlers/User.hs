@@ -34,7 +34,7 @@ getUsers err = throwError err403 {errBody = LBS.fromStrict $ BS.pack $ show err}
 
 getUser :: (MonadDB m, MonadError ServerError m) => AuthResult AuthSession -> UserId -> m User
 getUser (Authenticated sess) id = do
-  user <- liftEither' =<< runSession (Sessions.getUser id)
+  user <- liftMaybe' =<< liftEither' =<< runSession (Sessions.getUserById id)
   pure user
 getUser err id = throwError err403 {errBody = LBS.fromStrict $ BS.pack $ show err}
 

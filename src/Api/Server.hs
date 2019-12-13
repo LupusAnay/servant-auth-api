@@ -14,7 +14,7 @@ import Servant
 import Servant.Auth.Server
 
 sessionsServer :: (MonadDB m, MonadError ServerError m) => JWTSettings -> CookieSettings -> ServerT SessionAPI m
-sessionsServer jwts cs = createSession cs jwts :<|> getSession :<|> deleteSession
+sessionsServer jwts cs = createSession cs jwts :<|> getSession :<|> deleteSession cs
 
 usersServer :: (MonadDB m, MonadError ServerError m) => ServerT UsersAPI m
 usersServer = createUser :<|> getUser :<|> getUsers :<|> patchUser :<|> deleteUser
@@ -41,7 +41,7 @@ app pool key = do
 startApp :: IO ()
 startApp = do
   pool <- acquire settings
-  key <- generateKey -- TODO
+  key <- readKey "secret.key"
   run 8080 $ app pool key
   where
     settings = (1, 1, "host=localhost port=5432 user=lupusanay dbname=auth password=qwerty") -- TODO
