@@ -26,24 +26,27 @@ createUser user = do
   userId <- liftEither' =<< runSession (Sessions.createUser hashedUser)
   pure userId
 
-getUsers :: (MonadDB m, MonadError ServerError m) => AuthResult AuthSession -> m [User]
+getUsers :: (MonadDB m, MonadError ServerError m) => AuthResult AuthSession -> m [User] -- TODO: Add pagination, filtration and sort
 getUsers (Authenticated session) = do
   users <- liftEither' =<< runSession Sessions.getAllUsers
   pure users
-getUsers _ = throwError err403
+getUsers err = throwError err403 {errBody = LBS.fromStrict $ BS.pack $ show err}
 
-getUser :: (MonadDB m) => UserId -> m User
-getUser id = pure $ User 1 "lupusanay" "lupusanay@gmail.com" "qwerty"
+getUser :: (MonadDB m, MonadError ServerError m) => AuthResult AuthSession -> UserId -> m User
+getUser (Authenticated sess) id = do
+  user <- liftEither' =<< runSession (Sessions.getUser id)
+  pure user
+getUser err id = throwError err403 {errBody = LBS.fromStrict $ BS.pack $ show err}
 
 patchUser :: (MonadDB m, MonadError ServerError m) => AuthResult AuthSession -> UserId -> NewUser -> m NoContent
 patchUser (Authenticated session) id user = do
  hashedUser <- user & field @"password" hashPassword
  liftEither' =<< runSession (Sessions.updateUser id hashedUser)
  pure NoContent
-patchUser _ _ _ = throwError err403
+patchUser err _ _ = throwError err403 {errBody = LBS.fromStrict $ BS.pack $ show err}
 
 deleteUser :: (MonadDB m, MonadError ServerError m) => AuthResult AuthSession -> UserId -> m NoContent
 deleteUser (Authenticated session) id = do
   liftEither' =<< runSession (Sessions.deleteUser id)
   pure NoContent
-deleteUser _ _ = throwError err403
+deleteUser err _ = throwError err403 {errBody = LBS.fromStrict $ BS.pack $ show err}

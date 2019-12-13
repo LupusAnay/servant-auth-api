@@ -15,6 +15,13 @@ createUser =
     userIdDecoder
     [TH.singletonStatement| insert into "users" (username, email, password) values ($1 :: text, $2 :: text, $3 :: text) returning "user_id" :: int4 |]
 
+getUser :: Statement UserId User
+getUser =
+  dimap
+    userIdEncoder
+    userDecoder
+    [TH.singletonStatement| select "user_id" :: int4, "username" :: text, email :: text, password :: text from "users" where "user_id" = $1 :: int4 |]
+
 getAllUsers :: Statement () [User]
 getAllUsers =
   rmap
