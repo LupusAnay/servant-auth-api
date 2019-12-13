@@ -9,7 +9,7 @@ import GHC.Generics (Generic)
 import Hasql.Pool (Pool, UsageError, use)
 import Hasql.Session (Session)
 import Servant (Handler, ServerError)
-import Servant.Server (err500)
+import Servant.Server
 
 class MonadIO m =>
       MonadDB m
@@ -38,7 +38,7 @@ liftEither' (Left x) = throwError $ convert x
 
 liftMaybe' :: (MonadError ServerError m) => Maybe a -> m a
 liftMaybe' (Just x) = pure x
-liftMaybe' Nothing = throwError err500
+liftMaybe' Nothing = throwError err404
 
 instance ToServerError UsageError where
   convert err = err500
