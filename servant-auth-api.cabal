@@ -45,6 +45,7 @@ library
                      , jose
                      , lens
                      , bcrypt
+                     , time
   default-language:    Haskell2010
   default-extensions:  DataKinds
                      , TemplateHaskell
