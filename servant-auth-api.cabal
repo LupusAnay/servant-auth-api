@@ -21,6 +21,7 @@ library
                      , Api.Server
                      , Data.AuthSession
                      , Data.User
+                     , Data.AppSettings
                      , Database.Sessions.Users
                      , Database.Statements.Users
                      , Handlers.AuthSession

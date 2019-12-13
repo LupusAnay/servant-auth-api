@@ -5,6 +5,10 @@ module Api.App where
 import Control.Monad.Except (MonadError, throwError)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Reader (ReaderT, ask)
+import Data.AppSettings
+import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Lazy as LBS
+import Data.Generics.Labels (Field)
 import GHC.Generics (Generic)
 import Hasql.Pool (Pool, UsageError, use)
 import Hasql.Session (Session)
@@ -16,18 +20,37 @@ class MonadIO m =>
   where
   runSession :: Session a -> m (Either UsageError a)
 
+class Monad m =>
+      MonadSettings m
+  where
+  getSetting :: (AppSettings -> a) -> m a
+
+data Env =
+  Env
+    { dbPool :: Pool
+    , appSettings :: AppSettings
+    }
+
 newtype AppM a =
   AppM
-    { runAppM :: ReaderT Pool Handler a
+    { runAppM :: ReaderT Env Handler a
     }
   deriving (Functor, Applicative, Monad, MonadIO, Generic, MonadError ServerError)
 
 instance MonadDB AppM where
   runSession sess =
     AppM $ do
-      pool <- ask
+      env <- ask
+      let pool = dbPool env
       result <- liftIO $ use pool sess
       runAppM $ pure result
+
+instance MonadSettings AppM where
+  getSetting f =
+    AppM $ do
+      env <- ask
+      let settings = appSettings env
+      pure $ f settings
 
 class ToServerError a where
   convert :: a -> ServerError
@@ -41,4 +64,4 @@ liftMaybe' (Just x) = pure x
 liftMaybe' Nothing = throwError err404
 
 instance ToServerError UsageError where
-  convert err = err500
+  convert err = err500 {errBody = LBS.fromStrict $ BS.pack $ show err}
