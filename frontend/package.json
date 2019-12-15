@@ -1,0 +1,11 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "dependencies": {
+    
+  },
+  "scripts": {
+    "serve": "elm reactor",
+    "build": "elm make --optimize --output=\"dist/elm.js\" src/Main.elm"
+  }
+}
