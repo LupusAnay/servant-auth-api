@@ -26,7 +26,7 @@ createUser user = do
   userId <- liftEither' =<< runSession (Sessions.createUser hashedUser)
   pure userId
 
-getUsers :: (MonadDB m, MonadError ServerError m) => AuthResult AuthSession -> m [User] -- TODO: Add pagination, filtration and sort
+getUsers :: (MonadDB m, MonadError ServerError m) => AuthResult AuthSession -> m [User]
 getUsers (Authenticated session) = do
   users <- liftEither' =<< runSession Sessions.getAllUsers
   pure users

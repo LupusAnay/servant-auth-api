@@ -1,12 +1,11 @@
 module Data.User where
 
-import           Data.Aeson          (FromJSON, ToJSON)
+import           Data.Aeson
 import           GHC.Generics
 import           Servant.Auth.Server
 
 type UserId = Int
 
--- TODO: Skip password serialization in ToJSON
 data User =
   User
     { userId   :: UserId
@@ -14,7 +13,10 @@ data User =
     , email    :: String
     , password :: String
     }
-  deriving (Show, Generic, FromJSON, ToJSON)
+  deriving (Show, Generic, FromJSON)
+
+instance ToJSON User where
+  toJSON (User id name email _) = object ["userId" .= id, "username" .= name, "email" .= email]
 
 data AuthData =
   AuthData
