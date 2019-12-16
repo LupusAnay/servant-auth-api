@@ -17,6 +17,7 @@ import Network.Wai.Handler.Warp
 import Servant
 import Servant.Auth.Server
 import Control.Lens ((^.))
+import Control.Exception (catch, IOException)
 
 sessionsServer :: (MonadDB m, MonadError ServerError m, MonadSettings m) => JWTSettings -> CookieSettings -> ServerT SessionAPI m
 sessionsServer jwts cs = createSession cs jwts :<|> getSession :<|> deleteSession cs
@@ -71,4 +72,4 @@ readSettings = do
     (Left err) -> do print err; pure defaultAppSettings
 
 readFromCfg :: String -> IO (Either String AppSettings)
-readFromCfg = eitherDecodeFileStrict
+readFromCfg path = catch (eitherDecodeFileStrict path)  (\e -> pure (Left $ show (e :: IOException)))
