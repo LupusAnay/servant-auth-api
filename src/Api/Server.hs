@@ -18,6 +18,8 @@ import Servant
 import Servant.Auth.Server
 import Control.Lens ((^.))
 import Control.Exception (catch, IOException)
+import Network.Wai.Middleware.Cors
+import Network.Wai (Middleware)
 
 sessionsServer :: (MonadDB m, MonadError ServerError m, MonadSettings m) => JWTSettings -> CookieSettings -> ServerT SessionAPI m
 sessionsServer jwts cs = createSession cs jwts :<|> getSession :<|> deleteSession cs
@@ -44,6 +46,12 @@ app settings pool key = do
       server = usersServer :<|> sessionsServer jwtCfg cookieCfg
   serveWithContext api cfg $ hoistServerWithAuth api (appMToHandler settings pool) server
 
+corsWithContentType :: Middleware
+corsWithContentType = cors (const $ Just policy)
+    where
+      policy = simpleCorsResourcePolicy
+        { corsRequestHeaders = ["Content-Type"] }
+
 startApp :: IO ()
 startApp = do
   appSettings <- readSettings
@@ -57,7 +65,7 @@ startApp = do
       serverPort = appSettings ^. field @"serverPort"
   print key
   pool <- acquire (poolSize, 1, BS.pack $ mconcat ["host=", host, " port=", show port, " user=", user, " dbname=", name, " password=", password])
-  run serverPort $ app appSettings pool key
+  run serverPort $ corsWithContentType $ app appSettings pool key
 
 readSettings :: IO AppSettings
 readSettings = do
