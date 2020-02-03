@@ -6,6 +6,7 @@
   },
   "scripts": {
     "serve": "elm reactor",
-    "build": "elm make --optimize --output=\"dist/elm.js\" src/Main.elm"
+    "build:debug": "elm make --output=\"dist/elm.js\" src/Main.elm",
+    "build:release": "elm make --optimize --output=\"dist/elm.js\" src/Main.elm"
   }
 }

@@ -214,6 +214,7 @@
     <orderEntry type="library" name="data-default-instances-containers-0.0.1" level="project" />
     <orderEntry type="library" name="data-default-instances-dlist-0.0.1" level="project" />
     <orderEntry type="library" name="data-default-instances-old-locale-0.0.1" level="project" />
-    <orderEntry type="library" name="bootstrap" level="application" />
+    <orderEntry type="library" name="wai-cors-0.2.7" level="project" />
+    <orderEntry type="library" name="base-unicode-symbols-0.2.3" level="project" />
   </component>
 </module>

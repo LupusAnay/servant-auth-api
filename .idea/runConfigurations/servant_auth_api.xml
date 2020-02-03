@@ -2,11 +2,12 @@
   <configuration default="false" name="servant-auth-api" type="HaskellStackConfigurationType" factoryName="Haskell Stack Runner" show_console_on_std_err="false" show_console_on_std_out="false">
     <module name="servant-auth-api" />
     <option name="allowRunningInParallel" value="false" />
-    <option name="executableName" value="servant-auth-api-exe" />
+    <option name="executable" value="servant-auth-api-exe" />
     <option name="programArgs" value="" />
     <option name="stackArgs" value="" />
     <option name="workingDirPath" value="$PROJECT_DIR$" />
     <method v="2">
+      <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_Postgres" />
       <option name="Make" enabled="true" />
     </method>
   </configuration>
