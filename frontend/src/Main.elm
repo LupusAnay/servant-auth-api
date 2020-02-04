@@ -1,22 +1,27 @@
 module Main exposing (main)
 
+import Api.Msg as Api exposing (Msg)
+import Api.Sessions exposing (HttpResult, login)
 import Browser
+import Data.AuthData exposing (AuthData)
 import Data.AuthSession exposing (Session)
 import Html exposing (..)
-import SessionsApi exposing (HttpResult, Msg(..), login)
 
 
 main =
     Browser.element { init = init, update = update, view = view, subscriptions = subscriptions }
 
 
-type alias Model =
-    Result String Session
+type Model
+    = Loading
+    | LoggedIn Session
+    | LoggedOut
+    | Error String
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Err "Loading", login )
+    ( Loading, login <| AuthData "Fucker_3" "fuck" )
 
 
 subscriptions : Model -> Sub Msg
@@ -27,20 +32,24 @@ subscriptions _ =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg _ =
     case msg of
-        GotSession response ->
-            case response of
-                Ok session ->
-                    ( Ok session, Cmd.none )
+        Api.GotSession session ->
+            ( LoggedIn session, Cmd.none )
 
-                Err err ->
-                    ( Err <| Debug.toString err, Cmd.none )
+        Api.Error err ->
+            ( Error <| Debug.toString err, Cmd.none )
 
 
 view : Model -> Html Msg
 view model =
     case model of
-        Ok sess ->
-            text <| Debug.toString sess
+        LoggedIn session ->
+            text <| Debug.toString session
 
-        Err err ->
+        Error err ->
             text err
+
+        Loading ->
+            text "Loading"
+
+        LoggedOut ->
+            text "Logged Out"
