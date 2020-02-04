@@ -1,8 +1,8 @@
 module Api.Sessions exposing (HttpResult, getSession, login)
 
-import Api.Msg exposing (Msg(..))
 import Data.AuthData exposing (AuthData, authDataEncoder)
 import Data.AuthSession exposing (sessionDecoder)
+import Data.Msg exposing (Msg(..))
 import Http exposing (Body, jsonBody)
 import Utils.Helpers exposing (liftResult)
 

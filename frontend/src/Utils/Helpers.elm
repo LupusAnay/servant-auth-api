@@ -1,6 +1,6 @@
 module Utils.Helpers exposing (..)
 
-import Api.Msg exposing (Msg(..))
+import Data.Msg exposing (Msg(..))
 
 
 liftResult : (right -> Msg) -> Result left right -> Msg
@@ -10,4 +10,4 @@ liftResult f res =
             f ok
 
         Err err ->
-            Error <| Debug.toString err
+            GotError <| Debug.toString err
