@@ -1,8 +1,8 @@
 module Data.User exposing (..)
 
 
-type alias UserId
-    = Int
+type alias UserId =
+    Int
 
 
 type alias User =
