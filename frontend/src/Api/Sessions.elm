@@ -1,10 +1,8 @@
 module Api.Sessions exposing (HttpResult, getSession, login)
 
 import Data.AuthData exposing (AuthData, authDataEncoder)
-import Data.AuthSession exposing (sessionDecoder)
-import Data.Msg exposing (Msg(..))
-import Http exposing (Body, jsonBody)
-import Utils.Helpers exposing (liftResult)
+import Data.Session exposing (JWTData, jwtDataDecoder)
+import Http exposing (Body, Error, jsonBody)
 
 
 type alias HttpResult a =
@@ -21,15 +19,15 @@ sessionsUrl =
     String.concat [ apiUrl, "sessions" ]
 
 
-login : AuthData -> Cmd Msg
-login data =
+login : AuthData -> (Result Error JWTData -> msg) -> Cmd msg
+login data onResponse =
     Http.post
         { url = sessionsUrl
         , body = jsonBody <| authDataEncoder data
-        , expect = Http.expectJson (liftResult GotSession) sessionDecoder
+        , expect = Http.expectJson onResponse jwtDataDecoder
         }
 
 
-getSession : Cmd Msg
-getSession =
-    Http.get { url = sessionsUrl, expect = Http.expectJson (liftResult GotSession) sessionDecoder }
+getSession : (Result Error JWTData -> msg) -> Cmd msg
+getSession onResponse =
+    Http.get { url = sessionsUrl, expect = Http.expectJson onResponse jwtDataDecoder }
