@@ -8,7 +8,7 @@ import Crypto.JOSE
 import Data.Aeson
 import Data.AppSettings
 import Data.AuthSession
-import Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Char8 as BS
 import Data.Generics.Product
 import Handlers.AuthSession
 import Handlers.User
@@ -20,6 +20,7 @@ import Control.Lens ((^.))
 import Control.Exception (catch, IOException)
 import Network.Wai.Middleware.Cors
 import Network.Wai (Middleware)
+import Data.Time (secondsToDiffTime, getCurrentTime, UTCTime, addUTCTime, utctDay, nominalDay)
 
 sessionsServer :: (MonadDB m, MonadError ServerError m, MonadSettings m) => JWTSettings -> CookieSettings -> ServerT SessionAPI m
 sessionsServer jwts cs = createSession cs jwts :<|> getSession :<|> deleteSession cs
@@ -41,7 +42,12 @@ hoistServerWithAuth api = hoistServerWithContext api (Proxy :: Proxy '[ CookieSe
 app :: AppSettings -> Pool -> JWK -> Application
 app settings pool key = do
   let jwtCfg = defaultJWTSettings key
-      cookieCfg = defaultCookieSettings {cookieIsSecure = Servant.Auth.Server.NotSecure, cookieSameSite = AnySite}
+      cookieCfg = defaultCookieSettings { cookieIsSecure = Servant.Auth.Server.NotSecure
+                                        , cookieSameSite = AnySite
+                                        , cookieMaxAge = Just $ secondsToDiffTime 3600
+                                        , cookieXsrfSetting = Nothing
+                                        , sessionCookieName = "authToken"
+                                        }
       cfg = cookieCfg :. jwtCfg :. EmptyContext
       server = usersServer :<|> sessionsServer jwtCfg cookieCfg
   serveWithContext api cfg $ hoistServerWithAuth api (appMToHandler settings pool) server
@@ -50,7 +56,10 @@ corsWithContentType :: Middleware
 corsWithContentType = cors (const $ Just policy)
     where
       policy = simpleCorsResourcePolicy
-        { corsRequestHeaders = ["Content-Type"] }
+        { corsRequestHeaders = ["Content-Type"]
+        , corsOrigins = Just (map BS.pack ["http://localhost:4000", "http://localhost:8080", "http://localhost"], True)
+        , corsMethods = map BS.pack ["GET", "PUT", "POST", "DELETE"]
+        }
 
 startApp :: IO ()
 startApp = do
