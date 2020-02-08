@@ -1,22 +1,8 @@
-module Pages.NotFound exposing (..)
+module Pages.NotFound exposing (view)
 
-import Data.Session exposing (Session)
 import Element exposing (Element, text)
 
 
-type alias Msg =
-    ()
-
-
-type alias Model =
-    Session
-
-
-view : Model -> Element Msg
-view model =
-    text "NotFound"
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update _ model =
-    ( model, Cmd.none )
+view : Element msg
+view =
+    text "Not Found"

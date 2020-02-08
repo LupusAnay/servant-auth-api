@@ -1,54 +1,80 @@
-module Pages.Login exposing (..)
+module Pages.Login exposing (Model, Msg, init, update, view)
 
-import Api.Sessions exposing (login)
-import Data.LoginForm exposing (LoginForm, setPassword, setUsername)
-import Data.Session as Session exposing (JWTData, Session, jwtToSession)
-import Element exposing (Element, column, fill, height, padding, px, spacing, text, width)
+import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Input exposing (button, currentPassword, labelHidden, username)
-import Http
-import Route exposing (Route(..))
+import Http exposing (jsonBody)
+import Json.Encode as Encode
+import Session exposing (Session, sessionDecoder)
+import Utils exposing (RemoteData(..), WebData, fromResult)
+
+
+type alias LoginForm =
+    { username : String, password : String }
 
 
 type alias Model =
-    { session : Session, form : LoginForm, errors : List String }
+    { session : Maybe Session, form : LoginForm, errors : List String }
 
 
-type Msg
-    = GotSession Session
-    | ChangeUsername String
-    | ChangePassword String
-    | PressLogin
-    | GotError String
+init : ( Model, Cmd Msg )
+init =
+    ( { session = Nothing, form = { username = "", password = "" }, errors = [] }, Cmd.none )
+
+
+loginFormEncoder : LoginForm -> Encode.Value
+loginFormEncoder data =
+    Encode.object [ ( "username", Encode.string data.username ), ( "password", Encode.string data.password ) ]
+
+
+login : LoginForm -> Cmd Msg
+login data =
+    Http.riskyRequest
+        { method = "POST"
+        , url = "http://localhost:8080/sessions"
+        , body = jsonBody <| loginFormEncoder data
+        , expect = Http.expectJson (fromResult >> GotServerResponse) sessionDecoder
+        , headers = []
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+updateForm : (LoginForm -> LoginForm) -> LoginForm -> LoginForm
+updateForm setter form =
+    setter form
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotSession session ->
-            ( { model | session = session }, Route.replaceUrl (Session.navKey session) Route.Users )
+        UsernameChanged username ->
+            ( { model | form = updateForm (\form -> { form | username = username }) model.form }, Cmd.none )
 
-        ChangeUsername username ->
-            ( { model | form = setUsername username model.form }, Cmd.none )
+        PasswordChanged password ->
+            ( { model | form = updateForm (\form -> { form | password = password }) model.form }, Cmd.none )
 
-        ChangePassword password ->
-            ( { model | form = setPassword password model.form }, Cmd.none )
+        LoginPressed ->
+            ( model, login model.form )
 
-        PressLogin ->
-            ( model
-            , login model.form <|
-                \data ->
-                    case data of
-                        Ok jwt ->
-                            GotSession <| jwtToSession (Just jwt) (Session.navKey model.session)
+        GotServerResponse result ->
+            case result of
+                Success session ->
+                    ( { model | session = Just session }, Cmd.none )
 
-                        Err err ->
-                            GotError <| Debug.toString err
-            )
+                Failure error ->
+                    ( { model | session = Nothing, errors = Debug.toString error :: model.errors }, Cmd.none )
 
-        GotError error ->
-            ( { model | errors = error :: model.errors }, Cmd.none )
+                _ ->
+                    ( model, Cmd.none )
+
+
+type Msg
+    = UsernameChanged String
+    | PasswordChanged String
+    | LoginPressed
+    | GotServerResponse (WebData Session)
 
 
 loginForm : LoginForm -> Element Msg
@@ -58,10 +84,10 @@ loginForm form =
             { text = form.username
             , placeholder = Nothing
             , label = labelHidden "username"
-            , onChange = ChangeUsername
+            , onChange = UsernameChanged
             }
         , currentPassword []
-            { onChange = ChangePassword
+            { onChange = PasswordChanged
             , text = form.password
             , label = labelHidden "password"
             , show = False
@@ -75,7 +101,7 @@ loginForm form =
             , width fill
             , height <| px 50
             ]
-            { onPress = Just PressLogin
+            { onPress = Just LoginPressed
             , label = Element.el [ padding 10 ] <| text "Login"
             }
         ]

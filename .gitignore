@@ -26,3 +26,4 @@ cabal.project.local~
 out
 *.key
 *.local
+_frontend

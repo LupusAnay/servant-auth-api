@@ -1,138 +1,128 @@
-module Main exposing (main)
+module Main exposing (..)
 
-import Browser exposing (UrlRequest)
-import Browser.Navigation as Nav exposing (Key)
-import Data.LoginForm exposing (LoginForm, emptyLoginForm)
-import Data.Session as Session exposing (Session(..))
-import Element exposing (Element)
+import Browser exposing (Document, UrlRequest)
+import Browser.Navigation as Nav
+import Element
+import Html
 import Pages.Login as Login
 import Pages.NotFound as NotFound
-import Pages.Registration as Registration
 import Pages.Users as Users
-import Route exposing (Route)
+import Route exposing (Route(..))
+import Session exposing (Session)
 import Url exposing (Url)
-
-
-type Model
-    = LoginPage Login.Model
-    | RegistrationPage Registration.Model
-    | UsersPage Users.Model
-    | NotFoundPage NotFound.Model
-
-
-type Msg
-    = UrlChanged Url
-    | LinkClicked UrlRequest
-    | GotLoginMsg Login.Msg
-    | GotUsersMsg Users.Msg
-    | GotRegistrationMsg Registration.Msg
-    | GotNotFoundMsg NotFound.Msg
 
 
 main : Program () Model Msg
 main =
     Browser.application
         { init = init
+        , view = view
+        , subscriptions = \_ -> Sub.none
         , update = update
-        , view = \model -> { title = "Servant Auth API", body = [ Element.layout [] <| view model ] }
-        , subscriptions = subscriptions
         , onUrlChange = UrlChanged
         , onUrlRequest = LinkClicked
         }
 
 
-init : () -> Url -> Key -> ( Model, Cmd Msg )
-init _ _ key =
-    ( LoginPage { session = Guest key, form = emptyLoginForm, errors = [] }, Cmd.none )
+type Page
+    = NotFoundPage
+    | LoginPage Login.Model
+    | UsersPage Users.Model
 
 
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+type Msg
+    = LoginPageMsg Login.Msg
+    | UsersPageMsg Users.Msg
+    | LinkClicked UrlRequest
+    | UrlChanged Url
 
 
-updateSubModel createModel createMsg updateFunc model msg =
+type alias Model =
+    { route : Route, page : Page, navKey : Nav.Key, session : Maybe Session }
+
+
+init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url navKey =
     let
-        ( newSubModel, newSubMsg ) =
-            updateFunc msg model
+        model =
+            { route = Route.parseUrl url, page = NotFoundPage, navKey = navKey, session = Nothing }
     in
-    ( createModel newSubModel, Cmd.map createMsg newSubMsg )
+    initCurrentPage ( model, Cmd.none )
 
 
-toSession : Model -> Session
-toSession page =
-    case page of
-        LoginPage model ->
-            model.session
-
-        RegistrationPage model ->
-            model
-
-        UsersPage model ->
-            model
-
-        NotFoundPage model ->
-            model
-
-
-changeRouteTo : Route -> Model -> ( Model, Cmd Msg )
-changeRouteTo route model =
+initCurrentPage : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+initCurrentPage ( model, existingCmds ) =
     let
-        session =
-            toSession model
+        ( currentPage, mappedPageCmds ) =
+            case model.route of
+                Login ->
+                    let
+                        ( loginModel, loginCmds ) =
+                            Login.init
+                    in
+                    ( LoginPage loginModel, Cmd.map LoginPageMsg loginCmds )
+
+                Users ->
+                    let
+                        ( usersModel, usersCmds ) =
+                            Users.init model.session
+                    in
+                    ( UsersPage usersModel, Cmd.map UsersPageMsg usersCmds )
+
+                NotFound ->
+                    ( NotFoundPage, Cmd.none )
     in
-    case route of
-        Route.Login ->
-            ( LoginPage { session = session, form = emptyLoginForm, errors = [] }, Cmd.none )
-
-        Route.Registration ->
-            ( RegistrationPage session, Cmd.none )
-
-        Route.Users ->
-            ( UsersPage session, Cmd.none )
-
-        Route.NotFound ->
-            ( NotFoundPage session, Cmd.none )
+    ( { model | page = currentPage }, Cmd.batch [ existingCmds, mappedPageCmds ] )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case ( msg, model ) of
+    case ( msg, model.page ) of
+        ( LoginPageMsg subMsg, LoginPage loginModel ) ->
+            let
+                ( updatedLoginModel, updatedCmd ) =
+                    Login.update subMsg loginModel
+            in
+            ( { model | page = LoginPage updatedLoginModel }, Cmd.map LoginPageMsg updatedCmd )
+
+        ( UsersPageMsg subMsg, UsersPage usersModel ) ->
+            let
+                ( updatedUsersModel, updatedCmd ) =
+                    Users.update subMsg usersModel
+            in
+            ( { model | page = UsersPage updatedUsersModel }, Cmd.map UsersPageMsg updatedCmd )
+
         ( LinkClicked urlRequest, _ ) ->
             case urlRequest of
                 Browser.Internal url ->
-                    ( model, Nav.pushUrl (Session.navKey (toSession model)) (Url.toString url) )
+                    ( model, Nav.pushUrl model.navKey (Url.toString url) )
 
-                Browser.External href ->
-                    ( model, Nav.load href )
+                Browser.External url ->
+                    ( model, Nav.load url )
 
         ( UrlChanged url, _ ) ->
-            changeRouteTo (Route.urlToRoute url) model
-
-        ( GotLoginMsg subMsg, LoginPage subModel ) ->
-            updateSubModel LoginPage GotLoginMsg Login.update subModel subMsg
-
-        ( GotRegistrationMsg subMsg, RegistrationPage subModel ) ->
-            updateSubModel RegistrationPage GotRegistrationMsg Registration.update subModel subMsg
-
-        ( GotUsersMsg subMsg, UsersPage subModel ) ->
-            updateSubModel UsersPage GotUsersMsg Users.update subModel subMsg
+            let
+                newRoute =
+                    Route.parseUrl url
+            in
+            ( { model | route = newRoute }, Cmd.none ) |> initCurrentPage
 
         ( _, _ ) ->
             ( model, Cmd.none )
 
 
-view : Model -> Element Msg
+view : Model -> Document Msg
 view model =
-    case model of
-        LoginPage loginModel ->
-            Element.map GotLoginMsg <| Login.view loginModel
+    let
+        body =
+            case model.page of
+                NotFoundPage ->
+                    Element.layout [] NotFound.view
 
-        RegistrationPage registrationModel ->
-            Element.map GotRegistrationMsg <| Registration.view registrationModel
+                LoginPage loginModel ->
+                    Html.map LoginPageMsg <| Element.layout [] <| Login.view loginModel
 
-        UsersPage usersModel ->
-            Element.map GotUsersMsg <| Users.view usersModel
-
-        NotFoundPage notFoundModel ->
-            Element.map GotNotFoundMsg <| NotFound.view notFoundModel
+                UsersPage usersModel ->
+                    Html.map UsersPageMsg <| Element.layout [] <| Users.view usersModel
+    in
+    { title = "Servant Auth Api", body = [ body ] }

@@ -5,7 +5,8 @@
     
   },
   "scripts": {
-    "serve": "elm reactor",
+    "reactor": "elm reactor",
+    "serve": "elm-live src/Main.elm -s public/index.html -p 4000 -u -h 0.0.0.0 -- --output=dist/elm.js",
     "build:debug": "elm make --output=\"dist/elm.js\" src/Main.elm",
     "build:release": "elm make --optimize --output=\"dist/elm.js\" src/Main.elm"
   }
