@@ -81,7 +81,7 @@ update msg model =
         ( LoginPageMsg subMsg, LoginPage loginModel ) ->
             let
                 ( updatedLoginModel, updatedCmd ) =
-                    Login.update subMsg loginModel
+                    Login.update model.navKey subMsg loginModel
             in
             ( { model | page = LoginPage updatedLoginModel }, Cmd.map LoginPageMsg updatedCmd )
 

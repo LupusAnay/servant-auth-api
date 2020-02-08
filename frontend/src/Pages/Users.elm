@@ -3,7 +3,7 @@ module Pages.Users exposing (Model, Msg, init, update, view)
 import Element exposing (..)
 import Http exposing (Body, emptyBody)
 import Session exposing (Session)
-import User exposing (User, usersDecoder)
+import User exposing (User, userIdToString, usersDecoder)
 import Utils exposing (RemoteData(..), WebData, fromResult)
 
 
@@ -40,7 +40,8 @@ view model =
 
 userView : User -> Element Msg
 userView user =
-    text user.username
+    row [ padding 10, spacing 10 ]
+        [ text <| userIdToString user.userId, text user.username, text user.email ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

@@ -1,5 +1,6 @@
 module Pages.Login exposing (Model, Msg, init, update, view)
 
+import Browser.Navigation as Nav
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -46,8 +47,8 @@ updateForm setter form =
     setter form
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Nav.Key -> Msg -> Model -> ( Model, Cmd Msg )
+update key msg model =
     case msg of
         UsernameChanged username ->
             ( { model | form = updateForm (\form -> { form | username = username }) model.form }, Cmd.none )
@@ -61,7 +62,7 @@ update msg model =
         GotServerResponse result ->
             case result of
                 Success session ->
-                    ( { model | session = Just session }, Cmd.none )
+                    ( { model | session = Just session }, Nav.pushUrl key "users")
 
                 Failure error ->
                     ( { model | session = Nothing, errors = Debug.toString error :: model.errors }, Cmd.none )
