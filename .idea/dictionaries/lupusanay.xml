@@ -3,7 +3,9 @@
     <words>
       <w>api.</w>
       <w>bcrypt</w>
+      <w>cmds</w>
       <w>connstr</w>
+      <w>cors</w>
       <w>crypto.jose</w>
       <w>crypto.jose.jwa.jwk</w>
       <w>data.</w>
