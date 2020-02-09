@@ -57,7 +57,7 @@ corsWithContentType = cors (const $ Just policy)
     where
       policy = simpleCorsResourcePolicy
         { corsRequestHeaders = ["Content-Type"]
-        , corsOrigins = Just (map BS.pack ["http://localhost:4000", "http://localhost:8080", "http://localhost", "http://0.0.0.0:4000"], True)
+        , corsOrigins = Just (map BS.pack ["http://localhost:4000", "http://localhost:8080", "http://localhost", "http://0.0.0.0:4000", "http://109.167.191.151"], True)
         , corsMethods = map BS.pack ["GET", "PUT", "POST", "DELETE"]
         }
 

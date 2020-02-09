@@ -19,6 +19,9 @@ fromResult result =
         Err error ->
             Failure error
 
+updateForm : (form -> form) -> form -> form
+updateForm setter =
+    setter
 
 type alias WebData a =
     RemoteData Http.Error a

@@ -4,11 +4,12 @@ import Browser.Navigation as Nav
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
-import Element.Input exposing (button, currentPassword, labelHidden, username)
+import Element.Font as Font
+import Element.Input exposing (Placeholder, button, currentPassword, labelHidden, placeholder, username)
 import Http exposing (jsonBody)
 import Json.Encode as Encode
 import Session exposing (Session, sessionDecoder)
-import Utils exposing (RemoteData(..), WebData, fromResult)
+import Utils exposing (RemoteData(..), WebData, fromResult, updateForm)
 
 
 type alias LoginForm =
@@ -33,18 +34,13 @@ login : LoginForm -> Cmd Msg
 login data =
     Http.riskyRequest
         { method = "POST"
-        , url = "http://localhost:8080/sessions"
+        , url = "http://109.167.191.151:8080/sessions"
         , body = jsonBody <| loginFormEncoder data
         , expect = Http.expectJson (fromResult >> GotServerResponse) sessionDecoder
         , headers = []
         , timeout = Nothing
         , tracker = Nothing
         }
-
-
-updateForm : (LoginForm -> LoginForm) -> LoginForm -> LoginForm
-updateForm setter =
-    setter
 
 
 update : Nav.Key -> Msg -> Model -> ( Model, Cmd Msg )
@@ -80,10 +76,10 @@ type Msg
 
 loginForm : LoginForm -> Element Msg
 loginForm form =
-    column [ padding 5, spacing 5, centerX, centerY ]
+    column [ spacing 10 ]
         [ username []
             { text = form.username
-            , placeholder = Nothing
+            , placeholder = Just <| placeholder [] <| text "Username"
             , label = labelHidden "username"
             , onChange = UsernameChanged
             }
@@ -92,7 +88,7 @@ loginForm form =
             , text = form.password
             , label = labelHidden "password"
             , show = False
-            , placeholder = Nothing
+            , placeholder = Just <| placeholder [] <| text "Password"
             }
         , button
             [ Background.color <| Element.rgb255 251 249 255
@@ -105,10 +101,17 @@ loginForm form =
             { onPress = Just LoginPressed
             , label = Element.el [ padding 10 ] <| text "Login"
             }
-        , row [ spacing 5 ] [ text "Don't have an account?", link [] { url = "/registration", label = text "Registration" } ]
+        , row
+            [ spacing 5 ]
+            [ text "Don't have an account?"
+            , link [ Font.color <| Element.rgb255 112 97 255 ] { url = "/registration", label = text "Registration" }
+            ]
         ]
 
 
 view : Model -> Element Msg
 view model =
-    loginForm model.form
+    column [ centerX, centerY ]
+        [ column [ Font.color <| Element.rgb255 255 1 0, padding 5 ] <| List.map text model.errors
+        , loginForm model.form
+        ]

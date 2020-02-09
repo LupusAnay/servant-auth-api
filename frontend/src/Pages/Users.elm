@@ -55,7 +55,7 @@ fetchUsers : Cmd Msg
 fetchUsers =
     Http.riskyRequest
         { method = "GET"
-        , url = "http://localhost:8080/users"
+        , url = "http://109.167.191.151:8080/users"
         , body = emptyBody
         , expect = Http.expectJson (fromResult >> GotServerResponse) usersDecoder
         , headers = []

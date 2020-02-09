@@ -105,7 +105,7 @@ update msg model =
         ( RegistrationPageMsg subMsg, RegistrationPage registrationModel ) ->
             let
                 ( updatedRegistrationModel, updatedCmds ) =
-                    Registration.update subMsg registrationModel
+                    Registration.update model.navKey subMsg registrationModel
             in
             ( { model | page = RegistrationPage updatedRegistrationModel }, Cmd.map RegistrationPageMsg updatedCmds )
 
