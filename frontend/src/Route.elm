@@ -7,6 +7,7 @@ import Url.Parser exposing (..)
 type Route
     = Login
     | Users
+    | Registration
     | NotFound
 
 
@@ -22,4 +23,4 @@ parseUrl url =
 
 matchRoute : Parser (Route -> a) a
 matchRoute =
-    oneOf [ map Login (s "login"), map Users (s "users") ]
+    oneOf [ map Login (s "login"), map Users (s "users"), map Registration (s "registration") ]

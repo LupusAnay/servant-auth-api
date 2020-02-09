@@ -43,8 +43,8 @@ login data =
 
 
 updateForm : (LoginForm -> LoginForm) -> LoginForm -> LoginForm
-updateForm setter form =
-    setter form
+updateForm setter =
+    setter
 
 
 update : Nav.Key -> Msg -> Model -> ( Model, Cmd Msg )
@@ -62,7 +62,7 @@ update key msg model =
         GotServerResponse result ->
             case result of
                 Success session ->
-                    ( { model | session = Just session }, Nav.pushUrl key "users")
+                    ( { model | session = Just session }, Nav.pushUrl key "users" )
 
                 Failure error ->
                     ( { model | session = Nothing, errors = Debug.toString error :: model.errors }, Cmd.none )
@@ -80,7 +80,7 @@ type Msg
 
 loginForm : LoginForm -> Element Msg
 loginForm form =
-    column [ padding 5, spacing 5 ]
+    column [ padding 5, spacing 5, centerX, centerY ]
         [ username []
             { text = form.username
             , placeholder = Nothing
@@ -105,6 +105,7 @@ loginForm form =
             { onPress = Just LoginPressed
             , label = Element.el [ padding 10 ] <| text "Login"
             }
+        , row [ spacing 5 ] [ text "Don't have an account?", link [] { url = "/registration", label = text "Registration" } ]
         ]
 
 

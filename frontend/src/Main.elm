@@ -6,6 +6,7 @@ import Element
 import Html
 import Pages.Login as Login
 import Pages.NotFound as NotFound
+import Pages.Registration as Registration
 import Pages.Users as Users
 import Route exposing (Route(..))
 import Session exposing (Session)
@@ -28,11 +29,13 @@ type Page
     = NotFoundPage
     | LoginPage Login.Model
     | UsersPage Users.Model
+    | RegistrationPage Registration.Model
 
 
 type Msg
     = LoginPageMsg Login.Msg
     | UsersPageMsg Users.Msg
+    | RegistrationPageMsg Registration.Msg
     | LinkClicked UrlRequest
     | UrlChanged Url
 
@@ -69,6 +72,13 @@ initCurrentPage ( model, existingCmds ) =
                     in
                     ( UsersPage usersModel, Cmd.map UsersPageMsg usersCmds )
 
+                Registration ->
+                    let
+                        ( registrationModel, registrationCmds ) =
+                            Registration.init model.session
+                    in
+                    ( RegistrationPage registrationModel, Cmd.map RegistrationPageMsg registrationCmds )
+
                 NotFound ->
                     ( NotFoundPage, Cmd.none )
     in
@@ -91,6 +101,13 @@ update msg model =
                     Users.update subMsg usersModel
             in
             ( { model | page = UsersPage updatedUsersModel }, Cmd.map UsersPageMsg updatedCmd )
+
+        ( RegistrationPageMsg subMsg, RegistrationPage registrationModel ) ->
+            let
+                ( updatedRegistrationModel, updatedCmds ) =
+                    Registration.update subMsg registrationModel
+            in
+            ( { model | page = RegistrationPage updatedRegistrationModel }, Cmd.map RegistrationPageMsg updatedCmds )
 
         ( LinkClicked urlRequest, _ ) ->
             case urlRequest of
@@ -121,6 +138,9 @@ view model =
 
                 LoginPage loginModel ->
                     Html.map LoginPageMsg <| Element.layout [] <| Login.view loginModel
+
+                RegistrationPage registrationModel ->
+                    Html.map RegistrationPageMsg <| Element.layout [] <| Registration.view registrationModel
 
                 UsersPage usersModel ->
                     Html.map UsersPageMsg <| Element.layout [] <| Users.view usersModel
