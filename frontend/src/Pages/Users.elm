@@ -4,7 +4,7 @@ import Element exposing (..)
 import Http exposing (Body, emptyBody)
 import Session exposing (Session)
 import User exposing (User, userIdToString, usersDecoder)
-import Utils exposing (RemoteData(..), WebData, fromResult)
+import Utils exposing (RemoteData(..), WebData, fromResult, get)
 
 
 type alias Model =
@@ -53,12 +53,7 @@ update msg model =
 
 fetchUsers : Cmd Msg
 fetchUsers =
-    Http.riskyRequest
-        { method = "GET"
-        , url = "http://109.167.191.151:8080/users"
-        , body = emptyBody
+    get
+        { path = "users"
         , expect = Http.expectJson (fromResult >> GotServerResponse) usersDecoder
-        , headers = []
-        , timeout = Nothing
-        , tracker = Nothing
         }

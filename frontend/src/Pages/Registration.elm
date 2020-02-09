@@ -10,7 +10,7 @@ import Http exposing (jsonBody)
 import Json.Encode as Encode
 import Session exposing (Session)
 import User exposing (UserId, userIdDecoder)
-import Utils exposing (RemoteData(..), WebData, fromResult, updateForm)
+import Utils exposing (RemoteData(..), WebData, fromResult, post, updateForm)
 
 
 type alias Model =
@@ -131,12 +131,8 @@ registrationFormEncoder form =
 
 register : RegistrationForm -> Cmd Msg
 register form =
-    Http.riskyRequest
-        { method = "POST"
-        , url = "http://109.167.191.151:8080/users"
+    post
+        { path = "users"
         , body = jsonBody <| registrationFormEncoder form
         , expect = Http.expectJson (fromResult >> GotServerResponse) userIdDecoder
-        , headers = []
-        , timeout = Nothing
-        , tracker = Nothing
         }

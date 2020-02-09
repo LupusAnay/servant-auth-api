@@ -9,7 +9,7 @@ import Element.Input exposing (Placeholder, button, currentPassword, labelHidden
 import Http exposing (jsonBody)
 import Json.Encode as Encode
 import Session exposing (Session, sessionDecoder)
-import Utils exposing (RemoteData(..), WebData, fromResult, updateForm)
+import Utils exposing (RemoteData(..), WebData, fromResult, post, updateForm)
 
 
 type alias LoginForm =
@@ -32,14 +32,10 @@ loginFormEncoder data =
 
 login : LoginForm -> Cmd Msg
 login data =
-    Http.riskyRequest
-        { method = "POST"
-        , url = "http://109.167.191.151:8080/sessions"
+    post
+        { path = "sessions"
         , body = jsonBody <| loginFormEncoder data
         , expect = Http.expectJson (fromResult >> GotServerResponse) sessionDecoder
-        , headers = []
-        , timeout = Nothing
-        , tracker = Nothing
         }
 
 
