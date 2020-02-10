@@ -2,14 +2,12 @@ module Pages.Login exposing (Model, Msg, init, update, view)
 
 import Browser.Navigation as Nav
 import Element exposing (..)
-import Element.Background as Background
-import Element.Border as Border
 import Element.Font as Font
-import Element.Input exposing (Placeholder, button, currentPassword, labelHidden, placeholder, username)
 import Http exposing (jsonBody)
 import Json.Encode as Encode
 import Session exposing (Session, sessionDecoder)
 import Utils exposing (RemoteData(..), WebData, fromResult, post, updateForm)
+import Views exposing (currentPasswordInput, errorsView, sendButtonView, unprotectedHeaderView, usernameInput)
 
 
 type alias LoginForm =
@@ -72,31 +70,10 @@ type Msg
 
 loginForm : LoginForm -> Element Msg
 loginForm form =
-    column [ spacing 10 ]
-        [ username []
-            { text = form.username
-            , placeholder = Just <| placeholder [] <| text "Username"
-            , label = labelHidden "username"
-            , onChange = UsernameChanged
-            }
-        , currentPassword []
-            { onChange = PasswordChanged
-            , text = form.password
-            , label = labelHidden "password"
-            , show = False
-            , placeholder = Just <| placeholder [] <| text "Password"
-            }
-        , button
-            [ Background.color <| Element.rgb255 251 249 255
-            , Border.rounded 3
-            , Border.color <| Element.rgb255 0 0 0
-            , Border.width <| 1
-            , width fill
-            , height <| px 50
-            ]
-            { onPress = Just LoginPressed
-            , label = Element.el [ padding 10 ] <| text "Login"
-            }
+    column [ spacing 10, centerX, centerY ]
+        [ usernameInput form.username UsernameChanged
+        , currentPasswordInput form.password PasswordChanged
+        , sendButtonView "Login" (Just LoginPressed)
         , row
             [ spacing 5 ]
             [ text "Don't have an account?"
@@ -107,7 +84,8 @@ loginForm form =
 
 view : Model -> Element Msg
 view model =
-    column [ centerX, centerY ]
-        [ column [ Font.color <| Element.rgb255 255 1 0, padding 5 ] <| List.map text model.errors
+    column [ width fill, height fill ]
+        [ unprotectedHeaderView
+        , errorsView model.errors
         , loginForm model.form
         ]

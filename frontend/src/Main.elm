@@ -45,7 +45,7 @@ type alias Model =
 
 
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
-init flags url navKey =
+init _ url navKey =
     let
         model =
             { route = Route.parseUrl url, page = NotFoundPage, navKey = navKey, session = Nothing }
@@ -134,7 +134,7 @@ view model =
         body =
             case model.page of
                 NotFoundPage ->
-                    Element.layout [] NotFound.view
+                    Element.layout [] <| NotFound.view model.session
 
                 LoginPage loginModel ->
                     Html.map LoginPageMsg <| Element.layout [] <| Login.view loginModel

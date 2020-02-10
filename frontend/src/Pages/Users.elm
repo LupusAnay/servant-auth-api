@@ -1,10 +1,11 @@
 module Pages.Users exposing (Model, Msg, init, update, view)
 
 import Element exposing (..)
-import Http exposing (Body, emptyBody)
+import Http exposing (Body)
 import Session exposing (Session)
 import User exposing (User, userIdToString, usersDecoder)
 import Utils exposing (RemoteData(..), WebData, fromResult, get)
+import Views exposing (headerView)
 
 
 type alias Model =
@@ -22,10 +23,15 @@ init session =
 
 view : Model -> Element Msg
 view model =
-    case model.users of
+    column [ width fill, height fill ] [ headerView model.session, el [ centerX, centerY ] <| usersView model.users ]
+
+
+usersView : WebData (List User) -> Element Msg
+usersView data =
+    case data of
         Success users ->
             column
-                []
+                [ spacing 5 ]
                 (List.map userView users)
 
         Failure error ->
@@ -40,7 +46,7 @@ view model =
 
 userView : User -> Element Msg
 userView user =
-    row [ padding 10, spacing 10 ]
+    row [ spacing 10 ]
         [ text <| userIdToString user.userId, text user.username, text user.email ]
 
 

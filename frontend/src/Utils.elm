@@ -30,13 +30,13 @@ type alias WebData a =
 
 
 apiUrl path =
-    "http://109.167.191.151:8080/" ++ path
+    "http://localhost:8080/" ++ path
 
 
 get : { path : String, expect : Expect msg } -> Cmd msg
 get config =
     Http.riskyRequest
-        { method = "POST"
+        { method = "GET"
         , url = apiUrl config.path
         , body = emptyBody
         , expect = config.expect
@@ -52,6 +52,19 @@ post config =
         { method = "POST"
         , url = apiUrl config.path
         , body = config.body
+        , expect = config.expect
+        , headers = []
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+delete : { path : String, expect : Expect msg } -> Cmd msg
+delete config =
+    Http.riskyRequest
+        { method = "DELETE"
+        , url = apiUrl config.path
+        , body = emptyBody
         , expect = config.expect
         , headers = []
         , timeout = Nothing

@@ -2,15 +2,12 @@ module Pages.Registration exposing (Model, Msg, init, update, view)
 
 import Browser.Navigation as Nav
 import Element exposing (..)
-import Element.Background as Background
-import Element.Border as Border
-import Element.Font as Font
-import Element.Input exposing (..)
 import Http exposing (jsonBody)
 import Json.Encode as Encode
 import Session exposing (Session)
 import User exposing (UserId, userIdDecoder)
 import Utils exposing (RemoteData(..), WebData, fromResult, post, updateForm)
+import Views exposing (emailInput, errorsView, linkView, newPasswordInput, sendButtonView, unprotectedHeaderView, usernameInput)
 
 
 type alias Model =
@@ -42,54 +39,21 @@ init session =
 
 view : Model -> Element Msg
 view model =
-    registrationFormView model.form
+    column [ width fill, height fill ] [ unprotectedHeaderView, registrationFormView model.form, errorsView model.errors ]
 
 
 registrationFormView : RegistrationForm -> Element Msg
 registrationFormView form =
-    column [ padding 5, spacing 5, centerX, centerY ]
-        [ username []
-            { text = form.username
-            , placeholder = Just <| placeholder [] <| Element.text "Username"
-            , label = labelHidden "username"
-            , onChange = UsernameChanged
-            }
-        , email
-            []
-            { text = form.email
-            , placeholder = Just <| placeholder [] <| Element.text "Email"
-            , label = labelHidden "email"
-            , onChange = EmailChanged
-            }
-        , newPassword []
-            { onChange = PasswordChanged
-            , text = form.password
-            , label = labelHidden "password"
-            , show = False
-            , placeholder = Just <| placeholder [] <| Element.text "Password"
-            }
-        , newPassword []
-            { onChange = PasswordConfirmationChanged
-            , text = form.passwordConfirmation
-            , label = labelHidden "passwordConfirmation"
-            , show = False
-            , placeholder = Just <| placeholder [] <| Element.text "Password Again"
-            }
-        , button
-            [ Background.color <| Element.rgb255 251 249 255
-            , Border.rounded 3
-            , Border.color <| Element.rgb255 0 0 0
-            , Border.width <| 1
-            , width fill
-            , height <| px 50
-            ]
-            { onPress = Just RegistrationPressed
-            , label = Element.el [ padding 10 ] <| Element.text "Create Account"
-            }
+    column [ spacing 10, centerX, centerY ]
+        [ usernameInput form.username UsernameChanged
+        , emailInput form.email EmailChanged
+        , newPasswordInput form.password "Password" PasswordChanged
+        , newPasswordInput form.passwordConfirmation "Password Again" PasswordConfirmationChanged
+        , sendButtonView "Register" (Just RegistrationPressed)
         , row
             [ spacing 5 ]
             [ Element.text "Already have an account?"
-            , link [ Font.color <| Element.rgb255 112 97 255 ] { url = "/login", label = Element.text "Log In" }
+            , linkView "/login" "Log In"
             ]
         ]
 
@@ -110,11 +74,11 @@ update key msg model =
             ( { model | form = updateForm (\form -> { form | passwordConfirmation = passwordConfirmation }) model.form }, Cmd.none )
 
         RegistrationPressed ->
-            ( model, register model.form )
+            ( { model | errors = [] }, register model.form )
 
         GotServerResponse result ->
             case result of
-                Success userId ->
+                Success _ ->
                     ( model, Nav.pushUrl key "login" )
 
                 Failure error ->
