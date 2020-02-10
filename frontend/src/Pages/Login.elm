@@ -6,7 +6,7 @@ import Element.Font as Font
 import Http exposing (jsonBody)
 import Json.Encode as Encode
 import Session exposing (Session, sessionDecoder)
-import Utils exposing (RemoteData(..), WebData, fromResult, post, updateForm)
+import Utils exposing (RemoteData(..), WebData, checkSession, fromResult, post, updateForm)
 import Views exposing (currentPasswordInput, errorsView, sendButtonView, unprotectedHeaderView, usernameInput)
 
 
@@ -15,12 +15,12 @@ type alias LoginForm =
 
 
 type alias Model =
-    { session : Maybe Session, form : LoginForm, errors : List String }
+    { toggle : Bool, form : LoginForm, errors : List String }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { session = Nothing, form = { username = "", password = "" }, errors = [] }, Cmd.none )
+    ( { toggle = False, form = { username = "", password = "" }, errors = [] }, checkSession GotSession )
 
 
 loginFormEncoder : LoginForm -> Encode.Value
@@ -51,14 +51,22 @@ update key msg model =
 
         GotServerResponse result ->
             case result of
-                Success session ->
-                    ( { model | session = Just session }, Nav.pushUrl key "users" )
+                Success _ ->
+                    ( model, Nav.pushUrl key "users" )
 
                 Failure error ->
-                    ( { model | session = Nothing, errors = Debug.toString error :: model.errors }, Cmd.none )
+                    ( { model | errors = Debug.toString error :: model.errors }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
+
+        GotSession webData ->
+            case webData of
+                Success _ ->
+                    ( { model | toggle = False }, Nav.pushUrl key "users" )
+
+                _ ->
+                    ( { model | toggle = True }, Cmd.none )
 
 
 type Msg
@@ -66,6 +74,7 @@ type Msg
     | PasswordChanged String
     | LoginPressed
     | GotServerResponse (WebData Session)
+    | GotSession (WebData Session)
 
 
 loginForm : LoginForm -> Element Msg
@@ -87,5 +96,9 @@ view model =
     column [ width fill, height fill ]
         [ unprotectedHeaderView
         , errorsView model.errors
-        , loginForm model.form
+        , if model.toggle then
+            loginForm model.form
+
+          else
+            none
         ]

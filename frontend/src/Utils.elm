@@ -1,6 +1,7 @@
 module Utils exposing (..)
 
 import Http exposing (Body, Expect, emptyBody)
+import Session exposing (Session, sessionDecoder)
 
 
 type RemoteData error value
@@ -31,6 +32,16 @@ type alias WebData a =
 
 apiUrl path =
     "http://localhost:8080/" ++ path
+
+
+checkSession : (WebData Session -> msg) -> Cmd msg
+checkSession msg =
+    get { path = "sessions", expect = Http.expectJson (fromResult >> msg) sessionDecoder }
+
+
+logout : (Result Http.Error () -> msg) -> Cmd msg
+logout msg =
+    delete { path = "sessions", expect = Http.expectWhatever msg }
 
 
 get : { path : String, expect : Expect msg } -> Cmd msg

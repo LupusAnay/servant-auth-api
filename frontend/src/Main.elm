@@ -4,6 +4,7 @@ import Browser exposing (Document, UrlRequest)
 import Browser.Navigation as Nav
 import Element
 import Html
+import Http
 import Pages.Index as Index
 import Pages.Login as Login
 import Pages.NotFound as NotFound
@@ -12,6 +13,7 @@ import Pages.Users as Users
 import Route exposing (Route(..))
 import Session exposing (Session)
 import Url exposing (Url)
+import Utils exposing (RemoteData(..), WebData, logout)
 
 
 main : Program () Model Msg
@@ -41,6 +43,8 @@ type Msg
     | IndexPageMsg Index.Msg
     | LinkClicked UrlRequest
     | UrlChanged Url
+    | GotSession (WebData Session)
+    | LoggedOut (Result Http.Error ())
 
 
 type alias Model =
@@ -91,6 +95,9 @@ initCurrentPage ( model, existingCmds ) =
                             Index.init model.session
                     in
                     ( IndexPage indexModel, Cmd.map IndexPageMsg indexCmds )
+
+                Logout ->
+                    ( model.page, logout LoggedOut )
     in
     ( { model | page = currentPage }, Cmd.batch [ existingCmds, mappedPageCmds ] )
 
@@ -108,7 +115,7 @@ update msg model =
         ( UsersPageMsg subMsg, UsersPage usersModel ) ->
             let
                 ( updatedUsersModel, updatedCmd ) =
-                    Users.update subMsg usersModel
+                    Users.update model.navKey subMsg usersModel
             in
             ( { model | page = UsersPage updatedUsersModel }, Cmd.map UsersPageMsg updatedCmd )
 
@@ -133,6 +140,22 @@ update msg model =
 
                 Browser.External url ->
                     ( model, Nav.load url )
+
+        ( LoggedOut result, _ ) ->
+            case result of
+                Ok _ ->
+                    ( model, Nav.pushUrl model.navKey "login" )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
+        ( GotSession data, _ ) ->
+            case data of
+                Success sess ->
+                    ( { model | session = Just sess }, Cmd.none )
+
+                _ ->
+                    ( { model | session = Nothing }, Cmd.none )
 
         ( UrlChanged url, _ ) ->
             let

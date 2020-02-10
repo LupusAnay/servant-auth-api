@@ -1,10 +1,11 @@
 module Pages.Users exposing (Model, Msg, init, update, view)
 
+import Browser.Navigation as Nav
 import Element exposing (..)
 import Http exposing (Body)
 import Session exposing (Session)
 import User exposing (User, userIdToString, usersDecoder)
-import Utils exposing (RemoteData(..), WebData, fromResult, get)
+import Utils exposing (RemoteData(..), WebData, checkSession, fromResult, get)
 import Views exposing (headerView)
 
 
@@ -14,11 +15,12 @@ type alias Model =
 
 type Msg
     = GotServerResponse (WebData (List User))
+    | GotSession (WebData Session)
 
 
 init : Maybe Session -> ( Model, Cmd Msg )
 init session =
-    ( { users = Loading, session = session, errors = [] }, fetchUsers )
+    ( { users = Loading, session = session, errors = [] }, Cmd.batch [ checkSession GotSession, fetchUsers ] )
 
 
 view : Model -> Element Msg
@@ -50,11 +52,19 @@ userView user =
         [ text <| userIdToString user.userId, text user.username, text user.email ]
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Nav.Key -> Msg -> Model -> ( Model, Cmd Msg )
+update key msg model =
     case msg of
         GotServerResponse data ->
             ( { model | users = data }, Cmd.none )
+
+        GotSession webData ->
+            case webData of
+                Success sess ->
+                    ( { model | session = Just sess }, Cmd.none )
+
+                _ ->
+                    ( { model | session = Nothing }, Nav.pushUrl key "login"  )
 
 
 fetchUsers : Cmd Msg
