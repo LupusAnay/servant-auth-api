@@ -10,15 +10,16 @@ import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy as LBS
 import Data.Generics.Labels (Field)
 import GHC.Generics (Generic)
-import Hasql.Pool (Pool, UsageError, use)
-import Hasql.Session (Session)
+import Hasql.Pool (Pool, UsageError(..), use)
+import qualified Hasql.Session as HS
+import Hasql.Connection
 import Servant (Handler, ServerError)
 import Servant.Server
 
 class MonadIO m =>
       MonadDB m
   where
-  runSession :: Session a -> m (Either UsageError a)
+  runSession :: HS.Session a -> m (Either UsageError a)
 
 class Monad m =>
       MonadSettings m
@@ -63,5 +64,23 @@ liftMaybe' :: (MonadError ServerError m) => Maybe a -> m a
 liftMaybe' (Just x) = pure x
 liftMaybe' Nothing = throwError err404
 
+stringToLBS :: String -> LBS.ByteString
+stringToLBS = LBS.fromStrict . BS.pack
+
 instance ToServerError UsageError where
-  convert err = err500 {errBody = LBS.fromStrict $ BS.pack $ show err}
+  convert (ConnectionError err) = err500 {errBody = stringToLBS $ show err}
+  convert (SessionError err) = convert err
+
+instance ToServerError HS.QueryError where
+  convert (HS.QueryError query params error) = convert error
+
+instance ToServerError HS.CommandError where
+  convert (HS.ClientError (Just err)) = err500 {errBody = LBS.fromStrict err}
+  convert (HS.ClientError Nothing) = err500 {errBody = "Unknown database error"}
+  convert (HS.ResultError err) = convert err
+
+instance ToServerError HS.ResultError where
+  convert (HS.ServerError code message details hint) = err400 {errBody = LBS.fromStrict message}
+  convert (HS.UnexpectedResult err) = err500
+  convert (HS.RowError index err) = err500 {errBody = stringToLBS $ show err}
+  convert (HS.UnexpectedAmountOfRows count) = err500
