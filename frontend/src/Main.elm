@@ -4,6 +4,7 @@ import Browser exposing (Document, UrlRequest)
 import Browser.Navigation as Nav
 import Element
 import Html
+import Pages.Index as Index
 import Pages.Login as Login
 import Pages.NotFound as NotFound
 import Pages.Registration as Registration
@@ -30,12 +31,14 @@ type Page
     | LoginPage Login.Model
     | UsersPage Users.Model
     | RegistrationPage Registration.Model
+    | IndexPage Index.Model
 
 
 type Msg
     = LoginPageMsg Login.Msg
     | UsersPageMsg Users.Msg
     | RegistrationPageMsg Registration.Msg
+    | IndexPageMsg Index.Msg
     | LinkClicked UrlRequest
     | UrlChanged Url
 
@@ -81,6 +84,13 @@ initCurrentPage ( model, existingCmds ) =
 
                 NotFound ->
                     ( NotFoundPage, Cmd.none )
+
+                Index ->
+                    let
+                        ( indexModel, indexCmds ) =
+                            Index.init model.session
+                    in
+                    ( IndexPage indexModel, Cmd.map IndexPageMsg indexCmds )
     in
     ( { model | page = currentPage }, Cmd.batch [ existingCmds, mappedPageCmds ] )
 
@@ -108,6 +118,13 @@ update msg model =
                     Registration.update model.navKey subMsg registrationModel
             in
             ( { model | page = RegistrationPage updatedRegistrationModel }, Cmd.map RegistrationPageMsg updatedCmds )
+
+        ( IndexPageMsg subMsg, IndexPage indexModel ) ->
+            let
+                ( updatedIndexModel, updatedCmds ) =
+                    Index.update model.navKey subMsg indexModel
+            in
+            ( { model | page = IndexPage updatedIndexModel }, Cmd.map IndexPageMsg updatedCmds )
 
         ( LinkClicked urlRequest, _ ) ->
             case urlRequest of
@@ -144,5 +161,8 @@ view model =
 
                 UsersPage usersModel ->
                     Html.map UsersPageMsg <| Element.layout [] <| Users.view usersModel
+
+                IndexPage indexModel ->
+                    Html.map IndexPageMsg <| Element.layout [] <| Index.view indexModel
     in
     { title = "Servant Auth Api", body = [ body ] }

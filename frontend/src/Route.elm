@@ -9,6 +9,7 @@ type Route
     | Users
     | Registration
     | NotFound
+    | Index
 
 
 parseUrl : Url -> Route
@@ -23,4 +24,4 @@ parseUrl url =
 
 matchRoute : Parser (Route -> a) a
 matchRoute =
-    oneOf [ map Login (s "login"), map Users (s "users"), map Registration (s "registration") ]
+    oneOf [ map Login (s "login"), map Users (s "users"), map Registration (s "registration"), map Index top]
